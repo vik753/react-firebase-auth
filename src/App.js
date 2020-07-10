@@ -28,7 +28,7 @@ function App() {
   return (
     <div className="App">
       <h3>Firebase auth app</h3>
-      {isLoadingUser ? <p>Loading...</p> : user ? <Home /> : <Login />}
+      {isLoadingUser ? <p>Loading...</p> : user ? <Home user={user} /> : <Login />}
     </div>
   );
 }

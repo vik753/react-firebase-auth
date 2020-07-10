@@ -1,7 +1,32 @@
 import React from "react";
 import fire from "../config/fire";
 
-const Home = (props) => {
+const Home = ({ user }) => {
+  const db = fire.database();
+  const [name, setName] = React.useState("");
+  const [age, setAge] = React.useState(0);
+  const [eventName, setEventName] = React.useState("");
+  const [created, setCreated] = React.useState("");
+
+  React.useEffect(() => {
+    getData();
+  }, []);
+
+  const getData = () => {
+    const ref = db.ref(`users/${user.uid}/`);
+    ref.on(
+      "value",
+      (snapshot) => {
+        console.log(snapshot.val());
+      },
+      (error) => {
+        const { code, message } = error;
+        console.log(`DataSnapshot error! Code: ${code}. Message: ${message}`);
+        alert(`DataSnapshot error! Code: ${code}. Message: ${message}`);
+      }
+    );
+  };
+
   const logoutHandler = (e) => {
     e.preventDefault();
     fire
@@ -17,10 +42,70 @@ const Home = (props) => {
       });
   };
 
+  const savePetHandler = () => {
+    const id = `${Math.floor(Math.random() * Date.now())}${Math.floor(
+      Math.random() * Date.now()
+    )}`;
+
+    const petsRef = db.ref(`users/${user.uid}/pets/${id}`);
+
+    petsRef.set({
+      id,
+      name,
+      age,
+    });
+  };
+
+  const saveEvent = () => {
+    const id = `${Math.floor(Math.random() * Date.now())}${Math.floor(
+      Math.random() * Date.now()
+    )}`;
+
+    const petsRef = db.ref(`users/${user.uid}/events/${id}`);
+
+    petsRef.set({
+      id,
+      eventName,
+      created,
+    });
+  };
+
   return (
     <div>
-      <h1>You are logged in</h1>
+      <h1>You are logged in as: {user.email}</h1>
+      <p>Yur uid is: {user.uid}</p>
       <button onClick={logoutHandler}>LogOut</button>
+      <div>
+        <h2>Pets</h2>
+        <input
+          type="text"
+          placeholder="name"
+          defaultValue={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="age"
+          defaultValue={age}
+          min={0}
+          onChange={(e) => setAge(+e.target.value)}
+        />
+        <button onClick={savePetHandler}>Save</button>
+      </div>
+      <div>
+        <h2>Scheduler</h2>
+        <input
+          type="text"
+          placeholder="event name"
+          defaultValue={eventName}
+          onChange={(e) => setEventName(e.target.value)}
+        />
+        <input
+          type="datetime-local"
+          onChange={(e) => setCreated(e.target.value)}
+        />
+        <button onClick={saveEvent}>Save event</button>
+      </div>
     </div>
   );
 };
