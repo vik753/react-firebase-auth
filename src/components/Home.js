@@ -7,17 +7,18 @@ const Home = ({ user }) => {
   const [age, setAge] = React.useState(0);
   const [eventName, setEventName] = React.useState("");
   const [created, setCreated] = React.useState("");
+  const [pets, setPets] = React.useState([]);
+  const [events, setEvents] = React.useState([]);
+  const [eventPetId, setEventPetId] = React.useState("");
 
-  React.useEffect(() => {
-    getData();
-  }, []);
-
-  const getData = () => {
+  const getData = React.useCallback(() => {
     const ref = db.ref(`users/${user.uid}/`);
     ref.on(
       "value",
       (snapshot) => {
-        console.log(snapshot.val());
+        const { events, pets } = snapshot.val();
+        setPets(() => pets);
+        setEvents(() => events);
       },
       (error) => {
         const { code, message } = error;
@@ -25,7 +26,11 @@ const Home = ({ user }) => {
         alert(`DataSnapshot error! Code: ${code}. Message: ${message}`);
       }
     );
-  };
+  }, [db, user.uid]);
+
+  React.useEffect(() => {
+    getData();
+  }, [getData]);
 
   const logoutHandler = (e) => {
     e.preventDefault();
@@ -67,6 +72,7 @@ const Home = ({ user }) => {
       id,
       eventName,
       created,
+      eventPetId,
     });
   };
 
@@ -94,6 +100,21 @@ const Home = ({ user }) => {
       </div>
       <div>
         <h2>Scheduler</h2>
+        <select
+          name="pets"
+          id="pets"
+          required={true}
+          onChange={(e) => setEventPetId(e.target.value)}
+        >
+          <option value="">choose pet</option>
+          {Object.values(pets).map((pet) => {
+            return (
+              <option value={pet.id} key={pet.id}>
+                {pet.name}, {pet.age}
+              </option>
+            );
+          })}
+        </select>
         <input
           type="text"
           placeholder="event name"
